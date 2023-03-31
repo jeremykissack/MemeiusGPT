@@ -7,6 +7,8 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from dotenv import load_dotenv
 
+from constants import SYSTEM_MESSAGE, PROMPT
+
 load_dotenv()
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -16,8 +18,8 @@ openai.api_key = openai_api_key
 
 # Generate a prompt for DALL·E 2 using GPT-3.5-turbo
 messages = [
-    {"role": "system", "content": "You are a helpful assistant that generates long and creative meme prompts and short but funny texts."},
-    {"role": "user", "content": "Generate a meme prompt and text for an edgy meme. A meme prompt is used to generate the meme base image with dalle 2, and the text part is intended to be overlayed on the image, completing the meme. Use the format: 'Meme Prompt: [prompt] | Text: [text]'."}
+    {"role": "system", "content": SYSTEM_MESSAGE},
+    {"role": "user", "content": PROMPT}
 ]
 
 gpt_response = openai.ChatCompletion.create(

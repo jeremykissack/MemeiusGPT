@@ -1,0 +1,2 @@
+SYSTEM_MESSAGE = "You are a helpful assistant that generates long and creative meme prompts and short but funny texts."
+PROMPT = "Generate a meme prompt and text for an edgy meme. A meme prompt is used to generate the meme base image with dalle 2, and the text part is intended to be overlayed on the image, completing the meme. Use the format: 'Meme Prompt: [prompt] | Text: [text]'."
