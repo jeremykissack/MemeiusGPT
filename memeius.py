@@ -41,6 +41,32 @@ if meme_prompt_match:
 else:
     meme_prompt = ""
 
+# Extract the text
+text_pattern = r"Text: (.*?) \| Caption:"
+text_match = re.search(text_pattern, generated_text)
+
+if text_match:
+    text = text_match.group(1).replace('"', "").strip()
+else:
+    text = ""
+
+# Extract the caption
+caption_pattern = r"Caption: (.*?) \| Hashtags:"
+caption_match = re.search(caption_pattern, generated_text)
+
+if caption_match:
+    caption = caption_match.group(1)
+else:
+    caption = ""
+
+# Extract the hashtags
+hashtag_pattern = r"Hashtags: (#[^ ]+)(?: (#[^ ]+))*(?:\s|$)"
+hashtag_match = re.findall(hashtag_pattern, generated_text)
+
+hashtags = " ".join([tag for match in hashtag_match for tag in match if tag])
+
+print(hashtags)
+
 # Generate an image using the DALL·E 2 API with the generated prompt
 response = openai.Image.create(
     prompt=meme_prompt,
@@ -60,8 +86,7 @@ img = Image.open(BytesIO(response.content))
 # Create a drawing context
 draw = ImageDraw.Draw(img)
 
-# Define the text to overlay
-text = generated_text.split("|")[-1].replace("Text:", "").replace('"', "").strip()
+# Use the extracted text variable for overlay
 font = ImageFont.truetype("arial.ttf", 49)
 
 # Wrap the text and calculate the position of the text
@@ -85,9 +110,14 @@ filename = f"meme_{label}.jpg"
 img.save(os.path.join("memeHistory", filename))
 print("Saved image as:", filename)
 
-# Posting the Image to Instagram.
+# Check if the config folder exists and delete it
+import shutil
+config_folder = "config"
+if os.path.exists(config_folder):
+    shutil.rmtree(config_folder)
 
-caption = """This is my first post ever  
-#DeepFriedMemes #EdgyMemes #SurrealMemes #NihilistMemes #AntiMemes #MemeEconomy #MemeFormats #MemeTemplates #MemeGen #MemeWorld #MemeWar #MemeTherapy #MemeSquad #MemeMagic #MemeLords #MemeJunkie #MemeHeaven #MemeHell #MemeAddiction #MemeOverload"""
+# Posting the Image to Instagram.
+caption += f"\n\n{hashtags}"
+print(caption)
 insta = InstaPublisher()
-insta.publish(img, caption=caption)
+insta.publish(img, caption)

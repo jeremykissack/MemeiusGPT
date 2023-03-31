@@ -1,4 +1,5 @@
 import os
+import tempfile
 from instabot import Bot
 from dotenv import load_dotenv
 
@@ -13,4 +14,12 @@ class InstaPublisher:
         self.bot.login(username=USER, password=PASS)
 
     def publish(self, image, caption) -> None:
-        self.bot.upload_photo(image, caption=caption)
+        # Save the image to a temporary file
+        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_file:
+            image.save(temp_file.name)
+            
+            # Upload the photo using the temporary file path
+            self.bot.upload_photo(temp_file.name, caption=caption)
+            
+            # Clean up the temporary file
+            os.remove(temp_file.name)
