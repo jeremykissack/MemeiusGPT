@@ -8,6 +8,7 @@ from io import BytesIO
 from dotenv import load_dotenv
 
 from constants import SYSTEM_MESSAGE, PROMPT
+from instaBot import InstaPublisher
 
 load_dotenv()
 
@@ -83,3 +84,10 @@ label = len(os.listdir("memeHistory")) + 1
 filename = f"meme_{label}.jpg"
 img.save(os.path.join("memeHistory", filename))
 print("Saved image as:", filename)
+
+# Posting the Image to Instagram.
+
+caption = """This is my first post ever  
+#DeepFriedMemes #EdgyMemes #SurrealMemes #NihilistMemes #AntiMemes #MemeEconomy #MemeFormats #MemeTemplates #MemeGen #MemeWorld #MemeWar #MemeTherapy #MemeSquad #MemeMagic #MemeLords #MemeJunkie #MemeHeaven #MemeHell #MemeAddiction #MemeOverload"""
+insta = InstaPublisher()
+insta.publish(img, caption=caption)
