@@ -2,6 +2,7 @@ import openai
 import os
 import re
 import requests
+import textwrap
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from dotenv import load_dotenv
@@ -15,8 +16,8 @@ openai.api_key = openai_api_key
 
 # Generate a prompt for DALL·E 2 using GPT-3.5-turbo
 messages = [
-    {"role": "system", "content": "You are a helpful assistant that generates creative meme prompts and texts."},
-    {"role": "user", "content": "Generate a meme prompt and text for a funny meme. Use the format: 'Meme Prompt: [prompt] | Text: [text]'."}
+    {"role": "system", "content": "You are a helpful assistant that generates long and creative meme prompts and short but funny texts."},
+    {"role": "user", "content": "Generate a meme prompt and text for an edgy meme. A meme prompt is used to generate the meme base image with dalle 2, and the text part is intended to be overlayed on the image, completing the meme. Use the format: 'Meme Prompt: [prompt] | Text: [text]'."}
 ]
 
 gpt_response = openai.ChatCompletion.create(
@@ -57,18 +58,20 @@ img = Image.open(BytesIO(response.content))
 draw = ImageDraw.Draw(img)
 
 # Define the text to overlay
-text = generated_text.split("|")[-1].strip()
-font = ImageFont.truetype("arial.ttf", 36)
+text = generated_text.split("|")[-1].replace("Text:", "").replace('"', "").strip()
+font = ImageFont.truetype("arial.ttf", 49)
 
-# Determine the size of the text
-textwidth, textheight = draw.textsize(text, font)
-
-# Calculate the position of the text
+# Wrap the text and calculate the position of the text
+lines = textwrap.wrap(text, width=30)
+textwidth, textheight = draw.textsize("\n".join(lines), font)
 x = (img.width - textwidth) / 2
-y = (img.height - textheight) / 2
+y = img.height - textheight - 100
 
 # Overlay the text on the image
-draw.text((x, y), text, font=font, fill=(255, 255, 255))
+for line in lines:
+    textwidth, textheight = draw.textsize(line, font)
+    draw.text(((img.width - textwidth) / 2, y), line, font=font, fill=(255, 255, 255))
+    y += textheight
 
 # Save the image with a sequential label
 if not os.path.exists("memeHistory"):
