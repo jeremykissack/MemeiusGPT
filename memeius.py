@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from dotenv import load_dotenv
 
-from constants import SYSTEM_MESSAGE, PROMPT
+from utils import SYSTEM_MESSAGE, PROMPT, draw_text_with_border
 from instaBot import InstaPublisher
 
 load_dotenv()
@@ -60,10 +60,10 @@ else:
     caption = ""
 
 # Extract the hashtags
-hashtag_pattern = r"Hashtags: (#[^ ]+)(?: (#[^ ]+))*(?:\s|$)"
+hashtag_pattern = r"(#[^\s]+)"
 hashtag_match = re.findall(hashtag_pattern, generated_text)
 
-hashtags = " ".join([tag for match in hashtag_match for tag in match if tag])
+hashtags = " ".join(hashtag_match)
 
 print(hashtags)
 
@@ -96,9 +96,21 @@ x = (img.width - textwidth) / 2
 y = img.height - textheight - 100
 
 # Overlay the text on the image
+text_color = (255, 255, 255)  # White color
+border_color = (0, 0, 0)  # Black color
+border_thickness = 2
+
 for line in lines:
     textwidth, textheight = draw.textsize(line, font)
-    draw.text(((img.width - textwidth) / 2, y), line, font=font, fill=(255, 255, 255))
+    draw_text_with_border(
+        draw,
+        line,
+        ((img.width - textwidth) / 2, y),
+        font,
+        text_color,
+        border_color,
+        border_thickness,
+    )
     y += textheight
 
 # Save the image with a sequential label
