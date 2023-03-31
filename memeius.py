@@ -70,5 +70,11 @@ y = (img.height - textheight) / 2
 # Overlay the text on the image
 draw.text((x, y), text, font=font, fill=(255, 255, 255))
 
-# Save the image
-img.save('output.jpg')
+# Save the image with a sequential label
+if not os.path.exists("memeHistory"):
+    os.mkdir("memeHistory")
+
+label = len(os.listdir("memeHistory")) + 1
+filename = f"meme_{label}.jpg"
+img.save(os.path.join("memeHistory", filename))
+print("Saved image as:", filename)
