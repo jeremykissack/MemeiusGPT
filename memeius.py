@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from dotenv import load_dotenv
 
-from utils import SYSTEM_MESSAGE, draw_text_with_border, generate_prompt
+from utils import SYSTEM_MESSAGE_MEME, SYSTEM_MESSAGE_SUMMARY, draw_text_with_border, generate_prompt, summarize_context
 from instaBot import InstaPublisher
 from redditCrawler import RedditBot
 
@@ -22,61 +22,57 @@ openai.api_key = openai_api_key
 reddit_bot = RedditBot()
 
 # Fetch the top post and comments
-subreddit_name = 'all'
-time_filter = 'month'
+subreddit_name = 'technology'
+time_filter = 'day'
 comment_limit = 3
 reddit_features = reddit_bot.get_top_post_and_comments(subreddit_name, time_filter, comment_limit)
-print(reddit_features)
+
+# Summarize the reddit data using GPT-3.5-turbo
+summary_messages = [
+    {"role": "system", "content": SYSTEM_MESSAGE_SUMMARY},
+    {"role": "user", "content": summarize_context(reddit_features)}
+]
+
+print(summary_messages)
+
+gpt_summary_response = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages=summary_messages
+)
+response_summary_text = gpt_summary_response['choices'][0]['message']['content']
+
+print(gpt_summary_response)
 
 # Generate a prompt for DALL·E 2 using GPT-3.5-turbo
 messages = [
-    {"role": "system", "content": SYSTEM_MESSAGE},
-    {"role": "user", "content": generate_prompt(reddit_features)}
+    {"role": "system", "content": SYSTEM_MESSAGE_MEME},
+    {"role": "user", "content": generate_prompt(response_summary_text)}
 ]
+
+print(messages)
 
 gpt_response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=messages
 )
 
+print(gpt_response)
+
 # Get the text
-generated_text = gpt_response['choices'][0]['message']['content']
-print(generated_text)
+response_text = gpt_response['choices'][0]['message']['content']
+meme_prompt = re.search(r"Meme Prompt:(.+?)\|", response_text).group(1).strip()
+text = re.search(r"Text:(.+?)\|", response_text).group(1).strip().replace('"', "")
+caption = re.search(r"Caption:(.+?)\|", response_text).group(1).strip().replace('"', "")
+hashtags = re.search(r"Hashtags:(.+)", response_text).group(1).strip().replace('"', "")
 
-# Extract the meme prompt
-meme_prompt_pattern = r"Meme Prompt: (.*?) \| Text:"
-meme_prompt_match = re.search(meme_prompt_pattern, generated_text)
+# Check if any extracted value is empty
+if not meme_prompt or not text or not caption or not hashtags:
+    raise Exception("Some extracted values are empty. Terminating the script.")
 
-if meme_prompt_match:
-    meme_prompt = meme_prompt_match.group(1)
-else:
-    meme_prompt = ""
-
-# Extract the text
-text_pattern = r"Text: (.*?) \| Caption:"
-text_match = re.search(text_pattern, generated_text)
-
-if text_match:
-    text = text_match.group(1).replace('"', "").strip()
-else:
-    text = ""
-
-# Extract the caption
-caption_pattern = r"Caption: (.*?) \| Hashtags:"
-caption_match = re.search(caption_pattern, generated_text)
-
-if caption_match:
-    caption = caption_match.group(1)
-else:
-    caption = ""
-
-# Extract the hashtags
-hashtag_pattern = r"(#[^\s]+)"
-hashtag_match = re.findall(hashtag_pattern, generated_text)
-
-hashtags = " ".join(hashtag_match)
-
-print(hashtags)
+print("Meme Prompt:", meme_prompt)
+print("Text:", text)
+print("Caption:", caption)
+print("Hashtags:", hashtags)
 
 # Generate an image using the DALL·E 2 API with the generated prompt
 response = openai.Image.create(
