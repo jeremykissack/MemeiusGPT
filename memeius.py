@@ -7,8 +7,9 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from dotenv import load_dotenv
 
-from utils import SYSTEM_MESSAGE, PROMPT, draw_text_with_border
+from utils import SYSTEM_MESSAGE, draw_text_with_border, generate_prompt
 from instaBot import InstaPublisher
+from redditCrawler import RedditBot
 
 load_dotenv()
 
@@ -17,10 +18,20 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 # Set the API key
 openai.api_key = openai_api_key
 
+# Create an instance of the RedditBot class
+reddit_bot = RedditBot()
+
+# Fetch the top post and comments
+subreddit_name = 'all'
+time_filter = 'month'
+comment_limit = 3
+reddit_features = reddit_bot.get_top_post_and_comments(subreddit_name, time_filter, comment_limit)
+print(reddit_features)
+
 # Generate a prompt for DALL·E 2 using GPT-3.5-turbo
 messages = [
     {"role": "system", "content": SYSTEM_MESSAGE},
-    {"role": "user", "content": PROMPT}
+    {"role": "user", "content": generate_prompt(reddit_features)}
 ]
 
 gpt_response = openai.ChatCompletion.create(
