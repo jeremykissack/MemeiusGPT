@@ -22,7 +22,7 @@ openai.api_key = openai_api_key
 reddit_bot = RedditBot()
 
 # Fetch the top post and comments
-subreddit_name = 'technology'
+subreddit_name = 'all'
 time_filter = 'day'
 comment_limit = 3
 reddit_features = reddit_bot.get_top_post_and_comments(subreddit_name, time_filter, comment_limit)
