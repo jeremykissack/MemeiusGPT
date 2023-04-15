@@ -21,7 +21,7 @@ SYSTEM_MESSAGE_MEME = "You are a helpful assistant that generates long and creat
 def generate_prompt(topic_summary) -> str:
     
     user_message = f"Generate a meme prompt and text for a really edgy meme based on the following information. \
-        Topic: {topic_summary}. \
+        This is information relating to a reddit post, so pull details from this into the meme: {topic_summary}. \
         It should be low effort, but kinda stupid, and funny because it's stupid. \
         Dark humour is good, but it should not violate openAI's content policies. \
         Try to make the meme absolutely unhinged. \
